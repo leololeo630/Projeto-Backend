@@ -1,7 +1,7 @@
 # Agenda Eletrônica
 Integrantes: 
 Igor Gustavo Mainardes Ra: 2389495
-Leonardo Rodrigues de Oliveira Ra:2389495
+Leonardo Rodrigues de Oliveira Ra:2349779
 
 ## Visão Geral
 
@@ -148,9 +148,20 @@ O Projeto implementa um sistema robusto de tratamento de erros e logs:
 
 ### Instalação
 
+Na pasta do Projeto execute o comando:
+
 ```bash
 npm install 
 ```
+
+### Iniciar o Projeto
+
+Na pasta do Projeto execute o comando:
+
+```bash
+npm start
+```
+
 ## Requisitos
 
 - Node.js 14.x ou superior
