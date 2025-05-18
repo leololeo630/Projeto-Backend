@@ -1,12 +1,23 @@
 {
-  "name": "projeto-backend",
+  "name": "agenda-eletronica",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Agenda eletrônica",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "agenda",
+    "calendario",
+    "eventos",
+    "nodejs",
+    "sgdb"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^6.16.0",
+    "mongoose": "^7.0.0",
+    "winston": "^3.8.2"
+  }
 }
