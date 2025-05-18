@@ -57,7 +57,7 @@ async function exemploDeUso() {
     console.log('\n1. Criando um usuário...');
     const resultadoUsuario = await agendaEletronica.Usuario.criar({
       nome: 'Igor Gustavo Mainardes',
-      email: `Igorgustavomainardes@exemplo.com`,
+      email: `leos@exemplo.com`,
       senha: 'senha123'
     });
     
@@ -171,7 +171,25 @@ async function exemploDeUso() {
     }
     
     console.log(resultadoExclusao.mensagem);
-    
+
+    //excluindo usuario
+    console.log('\n9. Excluindo o usuario...');
+    const usuarioExclusao = await agendaEletronica.Usuario.excluir(usuario._id);
+
+    if (!usuarioExclusao.sucesso) {
+      throw new Error(`Erro ao excluir usuario: ${usuarioExclusao.erro.mensagem}`);
+    }
+    console.log(usuarioExclusao.mensagem);
+
+    //excluindo categoria
+    console.log('\n10. Excluindo a categoria...');
+    const categoriaExclusao = await agendaEletronica.Categoria.excluir(categoria._id);
+
+    if (!categoriaExclusao.sucesso) {
+      throw new Error(`Erro ao excluir categoria: ${categoriaExclusao.erro.mensagem}`);
+    }
+    console.log(categoriaExclusao.mensagem);
+
     // Encerrar a biblioteca
     console.log('\nEncerrando a biblioteca de agenda eletrônica...');
     await agendaEletronica.encerrar();
