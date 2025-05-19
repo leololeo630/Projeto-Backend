@@ -1,8 +1,8 @@
 # 📅 Agenda Eletrônica
 
 **Integrantes:**
-- 👨‍💻 Igor Gustavo Mainardes RA: 2389495
-- 👨‍💻 Leonardo Rodrigues de Oliveira RA: 2389495
+- 👨‍💻 Igor Gustavo Mainardes Ra:2389495
+- 👨‍💻 Leonardo Rodrigues de Oliveira Ra:2349779
 
 ## 🌟 Visão Geral
 
