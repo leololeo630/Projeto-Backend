@@ -1,56 +1,12 @@
-const mongoose = require('mongoose');
+
 const database = require('../database/Database');
 const errorHandler = require('../utils/ErrorHandler');
 const logger = require('../utils/Logger');
-
-const eventoSchema = new mongoose.Schema({
-  titulo: {
-    type: String,
-    required: [true, 'O título do evento é obrigatório']
-  },
-  descricao: {
-    type: String
-  },
-  dataInicio: {
-    type: Date,
-    required: [true, 'A data de início do evento é obrigatória']
-  },
-  dataFim: {
-    type: Date
-  },
-  local: {
-    type: String
-  },
-  usuarioId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario',
-    required: [true, 'O ID do usuário é obrigatório']
-  },
-  categoriaId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Categoria'
-  },
-  recorrencia: {
-    type: String,
-    enum: ['nenhuma', 'diaria', 'semanal', 'mensal', 'anual'],
-    default: 'nenhuma'
-  },
-  lembrete: {
-    type: Number,
-    default: 0
-  }
-}, {
-  timestamps: {
-    createdAt: 'dataCriacao',
-    updatedAt: 'dataAtualizacao'
-  }
-});
-
-
-const EventoModel = mongoose.model('Evento', eventoSchema);
-
-
 class Evento {
+  constructor() {
+    this.colecao = 'eventos';
+  }
+
   async criar(dados) {
     try {
       // Validar campos obrigatórios
@@ -74,8 +30,29 @@ class Evento {
         throw new Error('A data de fim deve ser posterior à data de início');
       }
       
-      // Criar o evento
-      const evento = await EventoModel.create(dados);
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      const eventoParaInserir = { ...dados };
+      if (dados.usuarioId) {
+        eventoParaInserir.usuarioId = database.converterParaObjectId(dados.usuarioId);
+      }
+      if (dados.categoriaId) {
+        eventoParaInserir.categoriaId = database.converterParaObjectId(dados.categoriaId);
+      }
+      
+      const agora = new Date();
+      eventoParaInserir.dataCriacao = agora;
+      eventoParaInserir.dataAtualizacao = agora;
+      
+      // Inserir o evento
+      const colecao = database.getColecao(this.colecao);
+      const resultado = await colecao.insertOne(eventoParaInserir);
+      
+      // Buscar o evento inserido para retornar
+      const evento = await colecao.findOne({ _id: resultado.insertedId });
+      
       logger.registrarInfo('Evento criado com sucesso', { id: evento._id });
       
       return {
@@ -89,12 +66,44 @@ class Evento {
   
   async buscarPorId(id) {
     try {
-      const evento = await EventoModel.findById(id)
-        .populate('usuarioId', 'nome email')
-        .populate('categoriaId', 'nome cor');
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      const objectId = database.converterParaObjectId(id);
+      
+      // Buscar o evento
+      const colecao = database.getColecao(this.colecao);
+      const evento = await colecao.findOne({ _id: objectId });
       
       if (!evento) {
         throw new Error('Evento não encontrado');
+      }
+      
+      // Buscar informações relacionadas (usuário e categoria)
+      if (evento.usuarioId) {
+        const usuariosColecao = database.getColecao('usuarios');
+        const usuario = await usuariosColecao.findOne({ _id: evento.usuarioId });
+        if (usuario) {
+          evento.usuario = {
+            _id: usuario._id,
+            nome: usuario.nome,
+            email: usuario.email
+          };
+        }
+      }
+      
+      if (evento.categoriaId) {
+        const categoriasColecao = database.getColecao('categorias');
+        const categoria = await categoriasColecao.findOne({ _id: evento.categoriaId });
+        if (categoria) {
+          evento.categoria = {
+            _id: categoria._id,
+            nome: categoria.nome,
+            cor: categoria.cor
+          };
+        }
       }
       
       return {
@@ -108,9 +117,33 @@ class Evento {
   
   async listarPorUsuario(usuarioId) {
     try {
-      const eventos = await EventoModel.find({ usuarioId })
-        .populate('categoriaId', 'nome cor')
-        .sort({ dataInicio: 1 });
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      const objectId = database.converterParaObjectId(usuarioId);
+      
+      // Buscar os eventos
+      const colecao = database.getColecao(this.colecao);
+      const eventos = await colecao.find({ usuarioId: objectId })
+        .sort({ dataInicio: 1 })
+        .toArray();
+      
+      // Buscar informações das categorias
+      const categoriasColecao = database.getColecao('categorias');
+      for (const evento of eventos) {
+        if (evento.categoriaId) {
+          const categoria = await categoriasColecao.findOne({ _id: evento.categoriaId });
+          if (categoria) {
+            evento.categoria = {
+              _id: categoria._id,
+              nome: categoria.nome,
+              cor: categoria.cor
+            };
+          }
+        }
+      }
       
       return {
         sucesso: true,
@@ -126,6 +159,10 @@ class Evento {
       // Validar datas
       if (!dataInicio || !dataFim) {
         throw new Error('As datas de início e fim são obrigatórias');
+      }
+      
+      if (!database.isConnected) {
+        await database.conectar();
       }
       
       // Construir filtro
@@ -149,13 +186,42 @@ class Evento {
       
       // Adicionar filtro de usuário se fornecido
       if (usuarioId) {
-        filtro.usuarioId = usuarioId;
+        filtro.usuarioId = database.converterParaObjectId(usuarioId);
       }
       
-      const eventos = await EventoModel.find(filtro)
-        .populate('usuarioId', 'nome email')
-        .populate('categoriaId', 'nome cor')
-        .sort({ dataInicio: 1 });
+      // Buscar os eventos
+      const colecao = database.getColecao(this.colecao);
+      const eventos = await colecao.find(filtro)
+        .sort({ dataInicio: 1 })
+        .toArray();
+      
+      // Buscar informações relacionadas (usuário e categoria)
+      const usuariosColecao = database.getColecao('usuarios');
+      const categoriasColecao = database.getColecao('categorias');
+      
+      for (const evento of eventos) {
+        if (evento.usuarioId) {
+          const usuario = await usuariosColecao.findOne({ _id: evento.usuarioId });
+          if (usuario) {
+            evento.usuario = {
+              _id: usuario._id,
+              nome: usuario.nome,
+              email: usuario.email
+            };
+          }
+        }
+        
+        if (evento.categoriaId) {
+          const categoria = await categoriasColecao.findOne({ _id: evento.categoriaId });
+          if (categoria) {
+            evento.categoria = {
+              _id: categoria._id,
+              nome: categoria.nome,
+              cor: categoria.cor
+            };
+          }
+        }
+      }
       
       return {
         sucesso: true,
@@ -166,20 +232,43 @@ class Evento {
     }
   }
   
-
   async listarPorCategoria(categoriaId, usuarioId = null) {
     try {
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
       // Construir filtro
-      const filtro = { categoriaId };
+      const filtro = {
+        categoriaId: database.converterParaObjectId(categoriaId)
+      };
       
       // Adicionar filtro de usuário se fornecido
       if (usuarioId) {
-        filtro.usuarioId = usuarioId;
+        filtro.usuarioId = database.converterParaObjectId(usuarioId);
       }
       
-      const eventos = await EventoModel.find(filtro)
-        .populate('usuarioId', 'nome email')
-        .sort({ dataInicio: 1 });
+      // Buscar os eventos
+      const colecao = database.getColecao(this.colecao);
+      const eventos = await colecao.find(filtro)
+        .sort({ dataInicio: 1 })
+        .toArray();
+      
+      // Buscar informações dos usuários
+      const usuariosColecao = database.getColecao('usuarios');
+      for (const evento of eventos) {
+        if (evento.usuarioId) {
+          const usuario = await usuariosColecao.findOne({ _id: evento.usuarioId });
+          if (usuario) {
+            evento.usuario = {
+              _id: usuario._id,
+              nome: usuario.nome,
+              email: usuario.email
+            };
+          }
+        }
+      }
       
       return {
         sucesso: true,
@@ -207,8 +296,18 @@ class Evento {
         errorHandler.validarTiposDados(dados, tipos);
       }
       
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+
+      const objectId = database.converterParaObjectId(id);
+      
       // Verificar se o evento existe
-      const eventoExistente = await EventoModel.findById(id);
+      const colecao = database.getColecao(this.colecao);
+      const eventoExistente = await colecao.findOne({ _id: objectId });
+      
       if (!eventoExistente) {
         throw new Error('Evento não encontrado');
       }
@@ -221,18 +320,31 @@ class Evento {
         throw new Error('A data de fim deve ser posterior à data de início');
       }
       
+
+      const dadosAtualizados = { ...dados };
+      
+      if (dados.categoriaId) {
+        dadosAtualizados.categoriaId = database.converterParaObjectId(dados.categoriaId);
+      }
+      
+      dadosAtualizados.dataAtualizacao = new Date();
+      
       // Atualizar o evento
-      const evento = await EventoModel.findByIdAndUpdate(
-        id,
-        dados,
-        { new: true, runValidators: true }
+      const resultado = await colecao.findOneAndUpdate(
+        { _id: objectId },
+        { $set: dadosAtualizados },
+        { returnDocument: 'after' }
       );
+      
+      if (!resultado) {
+        throw new Error('Evento não encontrado');
+      }
       
       logger.registrarInfo('Evento atualizado com sucesso', { id });
       
       return {
         sucesso: true,
-        dados: evento
+        dados: resultado
       };
     } catch (erro) {
       return errorHandler.tratarErro(erro, 'Atualização de evento');
@@ -241,9 +353,18 @@ class Evento {
   
   async excluir(id) {
     try {
-      const evento = await EventoModel.findByIdAndDelete(id);
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
       
-      if (!evento) {
+      const objectId = database.converterParaObjectId(id);
+      
+      // Excluir o evento
+      const colecao = database.getColecao(this.colecao);
+      const resultado = await colecao.findOneAndDelete({ _id: objectId });
+      
+      if (!resultado) {
         throw new Error('Evento não encontrado');
       }
       

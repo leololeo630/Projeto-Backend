@@ -17,8 +17,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mongodb": "^6.16.0",
-    "mongoose": "^7.0.0",
-    "winston": "^3.8.2"
+    "mongodb": "^6.16.0"
   }
 }

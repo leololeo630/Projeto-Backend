@@ -1,12 +1,13 @@
+
 const Usuario = require('./models/Usuario');
 const Evento = require('./models/Evento');
 const Categoria = require('./models/Categoria');
+
 
 const Database = require('./database/Database');
 const ErrorHandler = require('./utils/ErrorHandler');
 const Logger = require('./utils/Logger');
 
-// Biblioteca de agenda eletrônica
 const agendaEletronica = {
 
   Usuario,
@@ -18,7 +19,7 @@ const agendaEletronica = {
   ErrorHandler,
   Logger,
   
-
+ 
   async inicializar() {
     try {
       await Database.conectar();
@@ -30,7 +31,7 @@ const agendaEletronica = {
     }
   },
   
-
+ 
   async encerrar() {
     try {
       await Database.desconectar();
@@ -49,15 +50,15 @@ module.exports = agendaEletronica;
 // Função de exemplo de uso
 async function exemploDeUso() {
   try {
-
+    // Inicializar a biblioteca
     console.log('Inicializando a biblioteca de agenda eletrônica...');
     await agendaEletronica.inicializar();
     
     // Criar um usuário
     console.log('\n1. Criando um usuário...');
     const resultadoUsuario = await agendaEletronica.Usuario.criar({
-      nome: 'Igor Gustavo Mainardes',
-      email: `leos@exemplo.com`,
+      nome: 'João Silva',
+      email: `joao.silva${Date.now()}@exemplo.com`, // Email único com timestamp
       senha: 'senha123'
     });
     
@@ -90,7 +91,7 @@ async function exemploDeUso() {
     dataInicio.setDate(dataInicio.getDate() + 1);
     
     const dataFim = new Date(dataInicio);
-    dataFim.setHours(dataFim.getHours() + 2);
+    dataFim.setHours(dataFim.getHours() + 2); 
     
     const resultadoEvento = await agendaEletronica.Evento.criar({
       titulo: 'Reunião de Projeto',
@@ -99,7 +100,7 @@ async function exemploDeUso() {
       dataFim,
       local: 'Sala de Reuniões',
       usuarioId: usuario._id.toString(),
-      categoriaId: categoria._id.toString(),
+      categoriaId: categoria._id.toString(), 
       recorrencia: 'semanal',
       lembrete: 30
     });
@@ -152,7 +153,7 @@ async function exemploDeUso() {
         // Título ausente (campo obrigatório)
         descricao: 'Este evento não tem título',
         dataInicio: new Date(),
-        usuarioId: usuario._id
+        usuarioId: usuario._id.toString()
       });
       
       if (!resultadoErro.sucesso) {
@@ -162,34 +163,6 @@ async function exemploDeUso() {
       console.log(`Exceção capturada: ${erro.message}`);
     }
     
-    // Excluir o evento
-    console.log('\n8. Excluindo o evento...');
-    const resultadoExclusao = await agendaEletronica.Evento.excluir(evento._id);
-    
-    if (!resultadoExclusao.sucesso) {
-      throw new Error(`Erro ao excluir evento: ${resultadoExclusao.erro.mensagem}`);
-    }
-    
-    console.log(resultadoExclusao.mensagem);
-
-    //excluindo usuario
-    console.log('\n9. Excluindo o usuario...');
-    const usuarioExclusao = await agendaEletronica.Usuario.excluir(usuario._id);
-
-    if (!usuarioExclusao.sucesso) {
-      throw new Error(`Erro ao excluir usuario: ${usuarioExclusao.erro.mensagem}`);
-    }
-    console.log(usuarioExclusao.mensagem);
-
-    //excluindo categoria
-    console.log('\n10. Excluindo a categoria...');
-    const categoriaExclusao = await agendaEletronica.Categoria.excluir(categoria._id);
-
-    if (!categoriaExclusao.sucesso) {
-      throw new Error(`Erro ao excluir categoria: ${categoriaExclusao.erro.mensagem}`);
-    }
-    console.log(categoriaExclusao.mensagem);
-
     // Encerrar a biblioteca
     console.log('\nEncerrando a biblioteca de agenda eletrônica...');
     await agendaEletronica.encerrar();
@@ -206,6 +179,8 @@ async function exemploDeUso() {
     }
   }
 }
+
+// Executar o exemplo apenas quando o arquivo é chamado diretamente
 if (require.main === module) {
   console.log('Executando exemplo de uso da biblioteca de agenda eletrônica...');
   exemploDeUso();

@@ -12,13 +12,13 @@ class ErrorHandler {
     let mensagem = 'Ocorreu um erro interno';
     let codigo = 500;
 
-    if (erro.name === 'ValidationError') {
+    if (erro.message.includes('validação')) {
       mensagem = 'Erro de validação de dados';
       codigo = 400;
-    } else if (erro.name === 'CastError') {
+    } else if (erro.message.includes('ID inválido')) {
       mensagem = 'Formato de ID inválido';
       codigo = 400;
-    } else if (erro.code === 11000) {
+    } else if (erro.message.includes('duplicate key') || erro.code === 11000) {
       mensagem = 'Registro duplicado';
       codigo = 409;
     } else if (erro.message.includes('obrigatório')) {
@@ -52,10 +52,8 @@ class ErrorHandler {
 
         switch (tipo) {
           case 'string':
-  tipoValido = typeof dados[campo] === 'string' || 
-               (dados[campo] && typeof dados[campo].toString === 'function');
-  break;
-
+            tipoValido = typeof dados[campo] === 'string';
+            break;
           case 'number':
             tipoValido = typeof dados[campo] === 'number' && !isNaN(dados[campo]);
             break;
