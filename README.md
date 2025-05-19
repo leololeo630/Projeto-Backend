@@ -1,13 +1,20 @@
-# Agenda Eletrônica
-Integrantes: 
-Igor Gustavo Mainardes Ra: 2389495
-Leonardo Rodrigues de Oliveira Ra:2349779
+# 📅 Agenda Eletrônica
 
-## Visão Geral
+**Integrantes:**
+- 👨‍💻 Igor Gustavo Mainardes RA: 2389495
+- 👨‍💻 Leonardo Rodrigues de Oliveira RA: 2389495
 
-Este projeto implementa um conjunto de classes para acesso a SGDBs utilizando Node.js, focada na temática de agenda eletrônica (similar ao Google Calendar). A biblioteca permite o armazenamento e busca de eventos em um calendário, com funcionalidades de gerenciamento de usuários, eventos e categorias.
+## 🌟 Visão Geral
 
-## Estrutura do Projeto
+Este projeto implementa um conjunto de classes (biblioteca) de acesso a SGDBs utilizando Node.js, focado na temática de agenda eletrônica (similar ao Google Calendar). A biblioteca permite o armazenamento e busca de eventos em um calendário, com funcionalidades de gerenciamento de usuários, eventos e categorias.
+
+## ⚠️ Importante: 
+
+Este projeto foi feito utilizando as seguintes ferramentas:
+- ✅ Node.js
+- ✅ MongoDB
+
+## 📂 Estrutura do Projeto
 
 O projeto está organizado da seguinte forma:
 
@@ -15,24 +22,23 @@ O projeto está organizado da seguinte forma:
 Projeto-Backend/
 ├── src/
 │   ├── models/
-│   │   ├── Usuario.js
-│   │   ├── Evento.js
-│   │   └── Categoria.js
+│   │   ├── Usuario.js      # Classe para gerenciamento de usuários
+│   │   ├── Evento.js       # Classe para gerenciamento de eventos
+│   │   └── Categoria.js    # Classe para gerenciamento de categorias
 │   ├── database/
-│   │   └── Database.js
+│   │   └── Database.js     # Classe para conexão com o banco de dados
 │   ├── utils/
-│   │   ├── ErrorHandler.js
-│   │   └── Logger.js
-│   └── index.js
-├── logs/
-│   └── error.log
-├── package.json
-└── README.md
+│   │   ├── ErrorHandler.js # Classe para tratamento de erros
+│   │   └── Logger.js       # Classe para registro de logs
+│   └── index.js            # Arquivo principal e exemplo de uso
+├── logs/                   # Diretório para armazenamento de logs
+├── package.json            # Dependências do projeto
+└── README.md               # Documentação
 ```
 
-## Classes Implementadas
+## 📚 Classes Implementadas
 
-### 1. Classe Usuario
+### 1. 👤 Classe Usuario
 
 Representa os usuários da agenda eletrônica.
 
@@ -52,7 +58,7 @@ Representa os usuários da agenda eletrônica.
 - `atualizar(id, dados)`: Atualiza os dados de um usuário
 - `excluir(id)`: Remove um usuário do banco de dados
 
-### 2. Classe Evento
+### 2. 📆 Classe Evento
 
 Representa os eventos na agenda eletrônica.
 
@@ -79,7 +85,7 @@ Representa os eventos na agenda eletrônica.
 - `atualizar(id, dados)`: Atualiza os dados de um evento
 - `excluir(id)`: Remove um evento do banco de dados
 
-### 3. Classe Categoria
+### 3. 🏷️ Classe Categoria
 
 Representa as categorias para classificação dos eventos.
 
@@ -99,19 +105,20 @@ Representa as categorias para classificação dos eventos.
 - `atualizar(id, dados)`: Atualiza os dados de uma categoria
 - `excluir(id)`: Remove uma categoria do banco de dados
 
-### 4. Classe Database
+### 4. 💾 Classe Database
 
-Responsável pela conexão e operações com o banco de dados.
+Responsável pela conexão e operações com o banco de dados usando o driver nativo do MongoDB.
 
 #### Métodos:
 - `conectar()`: Estabelece conexão com o banco de dados
 - `desconectar()`: Encerra a conexão com o banco de dados
-- `executarQuery(model, operacao, parametros)`: Executa uma query no banco de dados
+- `getColecao(nomeColecao)`: Obtém uma coleção do banco de dados
+- `converterParaObjectId(id)`: Converte uma string para ObjectId
 - `iniciarTransacao()`: Inicia uma transação no banco de dados
 - `confirmarTransacao(sessao)`: Confirma uma transação no banco de dados
 - `reverterTransacao(sessao)`: Reverte uma transação no banco de dados
 
-### 5. Classe ErrorHandler
+### 5. ⚠️ Classe ErrorHandler
 
 Responsável pelo tratamento centralizado de erros.
 
@@ -120,57 +127,80 @@ Responsável pelo tratamento centralizado de erros.
 - `validarCamposObrigatorios(dados, campos)`: Valida se todos os campos obrigatórios estão preenchidos
 - `validarTiposDados(dados, tipos)`: Valida se os tipos de dados estão corretos
 
-### 6. Classe Logger
+### 6. 📝 Classe Logger
 
-Responsável pelo registro de logs do sistema.
+Responsável pelo registro de logs do sistema usando apenas Node.js nativo.
 
 #### Métodos:
 - `registrarInfo(mensagem, dados)`: Registra informações no log
 - `registrarErro(mensagem, erro, contexto)`: Registra erros no log
 - `registrarAviso(mensagem, dados)`: Registra avisos no log
-- `salvarLog()`: Salva os logs em arquivo
+- `formatarMensagem(level, mensagem, dados)`: Formata uma mensagem de log com timestamp
+- `escreverLog(arquivo, mensagem)`: Escreve uma mensagem no arquivo de log
 
-## Tratamento de Erros e Logs
+## 🛡️ Tratamento de Erros e Logs
 
-O Projeto implementa um sistema robusto de tratamento de erros e logs:
+O projeto implementa um sistema robusto de tratamento de erros e logs:
 
-1. **Validação de Campos Obrigatórios**: Todos os métodos de criação e atualização verificam se os campos obrigatórios estão preenchidos.
+1. ✅ **Validação de Campos Obrigatórios**: Todos os métodos de criação e atualização verificam se os campos obrigatórios estão preenchidos.
 
-2. **Validação de Tipos de Dados**: Os tipos de dados são validados para garantir a integridade das informações.
+2. ✅ **Validação de Tipos de Dados**: Os tipos de dados são validados para garantir a integridade das informações.
 
-3. **Tratamento de Exceções**: Todas as operações são envolvidas em blocos try/catch para capturar e tratar exceções.
+3. ✅ **Tratamento de Exceções**: Todas as operações são envolvidas em blocos try/catch para capturar e tratar exceções.
 
-4. **Logs de Erros**: Todos os erros são registrados em arquivos de log para posterior análise.
+4. ✅ **Logs de Erros**: Todos os erros são registrados em arquivos de log para posterior análise, usando apenas funções nativas do Node.js.
 
-5. **Respostas Padronizadas**: Todas as operações retornam respostas padronizadas, facilitando o tratamento pelo cliente.
+5. ✅ **Respostas Padronizadas**: Todas as operações retornam respostas padronizadas, facilitando o tratamento pelo cliente.
 
-## Como Usar
+## 🚀 Como Usar
 
 ### Instalação
 
-Na pasta do Projeto execute o comando:
+1. Clone o repositório
 
+2. Instale as dependências:
 ```bash
-npm install 
+npm install
 ```
 
-### Iniciar o Projeto
+3. Certifique-se de que o MongoDB está em execução na sua máquina
 
-Na pasta do Projeto execute o comando:
-
+4. Execute o exemplo:
 ```bash
 npm start
 ```
+ou
+```bash
+node src/index.js
+```
 
-## Requisitos
+### 🔍 Exemplo de Uso
+
+O arquivo `src/index.js` contém um exemplo completo de uso da biblioteca, demonstrando:
+- 👤 Criação de usuário
+- 🏷️ Criação de categoria
+- 📆 Criação de evento
+- 🔍 Busca de eventos
+- ✏️ Atualização de evento
+- 🗑️ Exclusão de evento
+- ⚠️ Tratamento de erros
+
+## 💻 Requisitos
 
 - Node.js 14.x ou superior
 - MongoDB 4.x ou superior
 
-## Dependências
+## 📦 Dependências
 
-- mongoose: Para conexão e operações com o MongoDB
+O projeto utiliza apenas:
+- **mongodb**: Driver oficial do MongoDB para Node.js
 
-## Considerações Finais
+## 🎓 Considerações Finais
 
-Esta biblioteca foi desenvolvida como parte do Projeto 1 da disciplina de Programação Web Back-End, seguindo os requisitos especificados. Ela implementa as funcionalidades básicas de uma agenda eletrônica, com foco no armazenamento e busca de eventos em um calendário.
+Esta biblioteca foi desenvolvida como parte do Projeto 1 da disciplina de Programação Web Back-End, seguindo os requisitos especificados. Ela implementa as funcionalidades básicas de uma agenda eletrônica, com foco no armazenamento e busca de eventos em um calendário, utilizando exclusivamente o driver nativo do MongoDB e Node.js puro.
+
+---
+
+### 👨‍💻 Desenvolvedores
+- Igor Gustavo Mainardes
+- Leonardo Rodrigues de Oliveira
