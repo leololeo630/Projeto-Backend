@@ -6,58 +6,53 @@ const Database = require('./database/Database');
 const ErrorHandler = require('./utils/ErrorHandler');
 const Logger = require('./utils/Logger');
 
-// Biblioteca de agenda eletrônica
-const agendaEletronica = {
 
+const agendaEletronica = {
   Usuario,
   Evento,
   Categoria,
   
-
   Database,
   ErrorHandler,
   Logger,
   
-
   async inicializar() {
     try {
       await Database.conectar();
-      Logger.registrarInfo('Biblioteca de agenda eletrônica inicializada com sucesso');
+      Logger.registrarInfo('Agenda eletrônica inicializada com sucesso');
       return true;
     } catch (erro) {
-      Logger.registrarErro('Erro ao inicializar a biblioteca de agenda eletrônica', erro);
+      Logger.registrarErro('Erro ao inicializar a Agenda eletrônica', erro);
       return false;
     }
   },
   
-
   async encerrar() {
     try {
       await Database.desconectar();
-      Logger.registrarInfo('Biblioteca de agenda eletrônica encerrada com sucesso');
+      Logger.registrarInfo('Agenda eletrônica encerrada com sucesso');
       return true;
     } catch (erro) {
-      Logger.registrarErro('Erro ao encerrar a biblioteca de agenda eletrônica', erro);
+      Logger.registrarErro('Erro ao encerrar a Agenda eletrônica', erro);
       return false;
     }
   }
 };
-
 
 module.exports = agendaEletronica;
 
 // Função de exemplo de uso
 async function exemploDeUso() {
   try {
-
-    console.log('Inicializando a biblioteca de agenda eletrônica...');
+    // Inicializar a biblioteca
+    console.log('Inicializando a Agenda eletrônica...');
     await agendaEletronica.inicializar();
     
     // Criar um usuário
     console.log('\n1. Criando um usuário...');
     const resultadoUsuario = await agendaEletronica.Usuario.criar({
       nome: 'Igor Gustavo Mainardes',
-      email: `leos@exemplo.com`,
+      email: `igorgustavomainardes@exemplo.com`,
       senha: 'senha123'
     });
     
@@ -98,10 +93,10 @@ async function exemploDeUso() {
       dataInicio,
       dataFim,
       local: 'Sala de Reuniões',
-      usuarioId: usuario._id.toString(),
+      usuarioId: usuario._id.toString(), 
       categoriaId: categoria._id.toString(),
       recorrencia: 'semanal',
-      lembrete: 30
+      lembrete: 30 
     });
     
     if (!resultadoEvento.sucesso) {
@@ -152,7 +147,7 @@ async function exemploDeUso() {
         // Título ausente (campo obrigatório)
         descricao: 'Este evento não tem título',
         dataInicio: new Date(),
-        usuarioId: usuario._id
+        usuarioId: usuario._id.toString()
       });
       
       if (!resultadoErro.sucesso) {
@@ -171,15 +166,15 @@ async function exemploDeUso() {
     }
     
     console.log(resultadoExclusao.mensagem);
-
+    
     //excluindo usuario
     console.log('\n9. Excluindo o usuario...');
-    const usuarioExclusao = await agendaEletronica.Usuario.excluir(usuario._id);
+    const resultadoExclusaoUsuario = await agendaEletronica.Usuario.excluir(usuario._id);
 
-    if (!usuarioExclusao.sucesso) {
-      throw new Error(`Erro ao excluir usuario: ${usuarioExclusao.erro.mensagem}`);
+    if (!resultadoExclusaoUsuario.sucesso) {
+      throw new Error(`Erro ao excluir usuario: ${resultadoExclusaoUsuario.erro.mensagem}`);
     }
-    console.log(usuarioExclusao.mensagem);
+    console.log(resultadoExclusaoUsuario.mensagem);
 
     //excluindo categoria
     console.log('\n10. Excluindo a categoria...');
@@ -191,7 +186,7 @@ async function exemploDeUso() {
     console.log(categoriaExclusao.mensagem);
 
     // Encerrar a biblioteca
-    console.log('\nEncerrando a biblioteca de agenda eletrônica...');
+    console.log('\nEncerrando a Agenda eletrônica...');
     await agendaEletronica.encerrar();
     
     console.log('\nExemplo concluído com sucesso!');
@@ -202,11 +197,13 @@ async function exemploDeUso() {
     try {
       await agendaEletronica.encerrar();
     } catch (erroEncerramento) {
-      console.error('Erro ao encerrar a biblioteca:', erroEncerramento);
+      console.error('Erro ao encerrar a Agenda:', erroEncerramento);
     }
   }
 }
+
+// Executar o exemplo apenas quando o arquivo é chamado diretamente
 if (require.main === module) {
-  console.log('Executando exemplo de uso da biblioteca de agenda eletrônica...');
+  console.log('Executando exemplo de uso da Agenda eletrônica...');
   exemploDeUso();
 }

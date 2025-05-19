@@ -1,37 +1,11 @@
-const mongoose = require('mongoose');
 const database = require('../database/Database');
 const errorHandler = require('../utils/ErrorHandler');
 const logger = require('../utils/Logger');
 
-
-const categoriaSchema = new mongoose.Schema({
-  nome: {
-    type: String,
-    required: [true, 'O nome da categoria é obrigatório']
-  },
-  cor: {
-    type: String,
-    default: '#3498db'
-  },
-  descricao: {
-    type: String
-  },
-  usuarioId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario',
-    required: [true, 'O ID do usuário é obrigatório']
-  }
-}, {
-  timestamps: {
-    createdAt: 'dataCriacao',
-    updatedAt: 'dataAtualizacao'
-  }
-});
-
-
-const CategoriaModel = mongoose.model('Categoria', categoriaSchema);
-
 class Categoria {
+  constructor() {
+    this.colecao = 'categorias';
+  }
 
   async criar(dados) {
     try {
@@ -46,8 +20,33 @@ class Categoria {
         usuarioId: 'string'
       });
       
-      // Criar a categoria
-      const categoria = await CategoriaModel.create(dados);
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+
+      const categoriaParaInserir = { ...dados };
+      if (dados.usuarioId) {
+        categoriaParaInserir.usuarioId = database.converterParaObjectId(dados.usuarioId);
+      }
+      
+
+      if (!categoriaParaInserir.cor) {
+        categoriaParaInserir.cor = '#3498db'; // Azul padrão
+      }
+      
+
+      const agora = new Date();
+      categoriaParaInserir.dataCriacao = agora;
+      categoriaParaInserir.dataAtualizacao = agora;
+      
+      // Inserir a categoria
+      const colecao = database.getColecao(this.colecao);
+      const resultado = await colecao.insertOne(categoriaParaInserir);
+      
+      // Buscar a categoria inserida para retornar
+      const categoria = await colecao.findOne({ _id: resultado.insertedId });
+      
       logger.registrarInfo('Categoria criada com sucesso', { id: categoria._id });
       
       return {
@@ -61,7 +60,16 @@ class Categoria {
   
   async buscarPorId(id) {
     try {
-      const categoria = await CategoriaModel.findById(id);
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+
+      const objectId = database.converterParaObjectId(id);
+      
+      // Buscar a categoria
+      const colecao = database.getColecao(this.colecao);
+      const categoria = await colecao.findOne({ _id: objectId });
       
       if (!categoria) {
         throw new Error('Categoria não encontrada');
@@ -78,7 +86,16 @@ class Categoria {
   
   async listarPorUsuario(usuarioId) {
     try {
-      const categorias = await CategoriaModel.find({ usuarioId });
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      const objectId = database.converterParaObjectId(usuarioId);
+      
+      // Buscar as categorias
+      const colecao = database.getColecao(this.colecao);
+      const categorias = await colecao.find({ usuarioId: objectId }).toArray();
       
       return {
         sucesso: true,
@@ -101,14 +118,26 @@ class Categoria {
         errorHandler.validarTiposDados(dados, tipos);
       }
       
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      const objectId = database.converterParaObjectId(id);
+      
+      const dadosAtualizados = {
+        ...dados,
+        dataAtualizacao: new Date()
+      };
+      
       // Atualizar a categoria
-      const categoria = await CategoriaModel.findByIdAndUpdate(
-        id,
-        dados,
-        { new: true, runValidators: true }
+      const colecao = database.getColecao(this.colecao);
+      const resultado = await colecao.findOneAndUpdate(
+        { _id: objectId },
+        { $set: dadosAtualizados },
+        { returnDocument: 'after' }
       );
       
-      if (!categoria) {
+      if (!resultado) {
         throw new Error('Categoria não encontrada');
       }
       
@@ -116,7 +145,7 @@ class Categoria {
       
       return {
         sucesso: true,
-        dados: categoria
+        dados: resultado
       };
     } catch (erro) {
       return errorHandler.tratarErro(erro, 'Atualização de categoria');
@@ -125,9 +154,19 @@ class Categoria {
   
   async excluir(id) {
     try {
-      const categoria = await CategoriaModel.findByIdAndDelete(id);
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
       
-      if (!categoria) {
+  
+      const objectId = database.converterParaObjectId(id);
+      
+      // Excluir a categoria
+      const colecao = database.getColecao(this.colecao);
+      const resultado = await colecao.findOneAndDelete({ _id: objectId });
+      
+      if (!resultado) {
         throw new Error('Categoria não encontrada');
       }
       

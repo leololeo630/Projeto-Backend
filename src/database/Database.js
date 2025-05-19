@@ -1,11 +1,13 @@
-
 class Database {
   constructor() {
-    this.mongoose = require('mongoose');
+    this.MongoClient = require('mongodb').MongoClient;
+    this.ObjectId = require('mongodb').ObjectId;
     this.logger = require('../utils/Logger');
+    this.client = null;
+    this.db = null;
     this.isConnected = false;
-    this.uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/agenda-eletronica';
-
+    this.uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017';
+    this.dbName = 'agenda-eletronica';
   }
 
   async conectar() {
@@ -15,11 +17,12 @@ class Database {
         return;
       }
 
-      await this.mongoose.connect(this.uri, {
+      this.client = await this.MongoClient.connect(this.uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true
       });
-
+      
+      this.db = this.client.db(this.dbName);
       this.isConnected = true;
       this.logger.registrarInfo('Conexão com o banco de dados estabelecida com sucesso');
     } catch (erro) {
@@ -35,7 +38,7 @@ class Database {
         return;
       }
 
-      await this.mongoose.disconnect();
+      await this.client.close();
       this.isConnected = false;
       this.logger.registrarInfo('Conexão com o banco de dados encerrada com sucesso');
     } catch (erro) {
@@ -44,17 +47,18 @@ class Database {
     }
   }
 
-  async executarQuery(model, operacao, parametros) {
-    try {
-      if (!this.isConnected) {
-        await this.conectar();
-      }
+  getColecao(nomeColecao) {
+    if (!this.isConnected) {
+      throw new Error('Não há conexão ativa com o banco de dados');
+    }
+    return this.db.collection(nomeColecao);
+  }
 
-      const resultado = await model[operacao](parametros);
-      return resultado;
+  converterParaObjectId(id) {
+    try {
+      return new this.ObjectId(id);
     } catch (erro) {
-      this.logger.registrarErro(`Erro ao executar query ${operacao}`, erro);
-      throw erro;
+      throw new Error('ID inválido');
     }
   }
 
@@ -64,7 +68,7 @@ class Database {
         await this.conectar();
       }
 
-      const sessao = await this.mongoose.startSession();
+      const sessao = this.client.startSession();
       sessao.startTransaction();
       this.logger.registrarInfo('Transação iniciada com sucesso');
       return sessao;

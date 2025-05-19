@@ -1,36 +1,12 @@
-const mongoose = require('mongoose');
+
 const database = require('../database/Database');
 const errorHandler = require('../utils/ErrorHandler');
 const logger = require('../utils/Logger');
 
-const usuarioSchema = new mongoose.Schema({
-  nome: {
-    type: String,
-    required: [true, 'O nome do usuário é obrigatório']
-  },
-  email: {
-    type: String,
-    required: [true, 'O email do usuário é obrigatório'],
-    unique: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Email inválido']
-  },
-  senha: {
-    type: String,
-    required: [true, 'A senha do usuário é obrigatória'],
-    minlength: [6, 'A senha deve ter pelo menos 6 caracteres']
-  }
-}, {
-  timestamps: {
-    createdAt: 'dataCriacao',
-    updatedAt: 'dataAtualizacao'
-  }
-});
-
-
-const UsuarioModel = mongoose.model('Usuario', usuarioSchema);
-
-
 class Usuario {
+  constructor() {
+    this.colecao = 'usuarios';
+  }
 
   async criar(dados) {
     try {
@@ -44,8 +20,24 @@ class Usuario {
         senha: 'string'
       });
       
-      // Criar o usuário
-      const usuario = await UsuarioModel.create(dados);
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      const agora = new Date();
+      const usuarioParaInserir = {
+        ...dados,
+        dataCriacao: agora,
+        dataAtualizacao: agora
+      };
+      
+      // Inserir o usuário
+      const colecao = database.getColecao(this.colecao);
+      const resultado = await colecao.insertOne(usuarioParaInserir);
+      
+      // Buscar o usuário inserido para retornar
+      const usuario = await colecao.findOne({ _id: resultado.insertedId });
+      
       logger.registrarInfo('Usuário criado com sucesso', { id: usuario._id });
       
       return {
@@ -59,7 +51,16 @@ class Usuario {
   
   async buscarPorId(id) {
     try {
-      const usuario = await UsuarioModel.findById(id);
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      const objectId = database.converterParaObjectId(id);
+      
+      // Buscar o usuário
+      const colecao = database.getColecao(this.colecao);
+      const usuario = await colecao.findOne({ _id: objectId });
       
       if (!usuario) {
         throw new Error('Usuário não encontrado');
@@ -76,7 +77,14 @@ class Usuario {
   
   async buscarPorEmail(email) {
     try {
-      const usuario = await UsuarioModel.findOne({ email });
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      // Buscar o usuário
+      const colecao = database.getColecao(this.colecao);
+      const usuario = await colecao.findOne({ email });
       
       if (!usuario) {
         throw new Error('Usuário não encontrado');
@@ -90,10 +98,17 @@ class Usuario {
       return errorHandler.tratarErro(erro, 'Busca de usuário por email');
     }
   }
-  
+
   async listarTodos() {
     try {
-      const usuarios = await UsuarioModel.find();
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      // Buscar todos os usuários
+      const colecao = database.getColecao(this.colecao);
+      const usuarios = await colecao.find().toArray();
       
       return {
         sucesso: true,
@@ -103,7 +118,7 @@ class Usuario {
       return errorHandler.tratarErro(erro, 'Listagem de usuários');
     }
   }
-
+  
   async atualizar(id, dados) {
     try {
       // Validar tipos de dados
@@ -116,14 +131,29 @@ class Usuario {
         errorHandler.validarTiposDados(dados, tipos);
       }
       
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+
+      const objectId = database.converterParaObjectId(id);
+      
+
+      const dadosAtualizados = {
+        ...dados,
+        dataAtualizacao: new Date()
+      };
+      
       // Atualizar o usuário
-      const usuario = await UsuarioModel.findByIdAndUpdate(
-        id,
-        dados,
-        { new: true, runValidators: true }
+      const colecao = database.getColecao(this.colecao);
+      const resultado = await colecao.findOneAndUpdate(
+        { _id: objectId },
+        { $set: dadosAtualizados },
+        { returnDocument: 'after' }
       );
       
-      if (!usuario) {
+      if (!resultado) {
         throw new Error('Usuário não encontrado');
       }
       
@@ -131,7 +161,7 @@ class Usuario {
       
       return {
         sucesso: true,
-        dados: usuario
+        dados: resultado
       };
     } catch (erro) {
       return errorHandler.tratarErro(erro, 'Atualização de usuário');
@@ -140,9 +170,18 @@ class Usuario {
   
   async excluir(id) {
     try {
-      const usuario = await UsuarioModel.findByIdAndDelete(id);
+
+      if (!database.isConnected) {
+        await database.conectar();
+      }
       
-      if (!usuario) {
+      const objectId = database.converterParaObjectId(id);
+      
+      // Excluir o usuário
+      const colecao = database.getColecao(this.colecao);
+      const resultado = await colecao.findOneAndDelete({ _id: objectId });
+      
+      if (!resultado) {
         throw new Error('Usuário não encontrado');
       }
       
