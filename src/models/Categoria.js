@@ -32,7 +32,7 @@ class Categoria {
       
 
       if (!categoriaParaInserir.cor) {
-        categoriaParaInserir.cor = '#3498db'; // Azul padrão
+        categoriaParaInserir.cor = '#3498db';
       }
       
 
@@ -103,6 +103,30 @@ class Categoria {
       };
     } catch (erro) {
       return errorHandler.tratarErro(erro, 'Listagem de categorias por usuário');
+    }
+  }
+
+  async buscarPorNomeEUsuario(nome, usuarioId) {
+    try {
+      if (!database.isConnected) {
+        await database.conectar();
+      }
+      
+      const objectId = database.converterParaObjectId(usuarioId);
+      
+      // Buscar a categoria por nome e usuário
+      const colecao = database.getColecao(this.colecao);
+      const categoria = await colecao.findOne({ 
+        nome: { $regex: new RegExp('^' + nome + '$', 'i') },
+        usuarioId: objectId 
+      });
+      
+      return {
+        sucesso: true,
+        dados: categoria
+      };
+    } catch (erro) {
+      return errorHandler.tratarErro(erro, 'Busca de categoria por nome e usuário');
     }
   }
   

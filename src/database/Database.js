@@ -17,10 +17,7 @@ class Database {
         return;
       }
 
-      this.client = await this.MongoClient.connect(this.uri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      });
+      this.client = await this.MongoClient.connect(this.uri);
       
       this.db = this.client.db(this.dbName);
       this.isConnected = true;

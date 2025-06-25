@@ -1,4 +1,4 @@
-# 📅 Agenda Eletrônica
+# 📅 Agenda Eletrônica - Projeto 2
 
 **Integrantes:**
 - 👨‍💻 Igor Gustavo Mainardes Ra:2389495
@@ -6,13 +6,17 @@
 
 ## 🌟 Visão Geral
 
-Este projeto implementa um conjunto de classes (biblioteca) de acesso a SGDBs utilizando Node.js, focado na temática de agenda eletrônica (similar ao Google Calendar). A biblioteca permite o armazenamento e busca de eventos em um calendário, com funcionalidades de gerenciamento de usuários, eventos e categorias.
+Este projeto implementa uma aplicação web utilizando as classes do Projeto 1 da disciplina, juntamente com o framework Express.js. A aplicação permite o gerenciamento de uma agenda eletrônica (similar ao Google Calendar) através de uma **interface web completa** usando templates EJS.
 
 ## ⚠️ Importante: 
 
-Este projeto foi feito utilizando as seguintes ferramentas:
+Este projeto foi desenvolvido utilizando as seguintes tecnologias:
 - ✅ Node.js
+- ✅ Express.js
 - ✅ MongoDB
+- ✅ Sistema de sessões para autenticação
+- ✅ EJS (Templates) para interface web
+- ✅ Bootstrap 5 para UI moderna
 
 ## 📂 Estrutura do Projeto
 
@@ -21,136 +25,65 @@ O projeto está organizado da seguinte forma:
 ```
 Projeto-Backend/
 ├── src/
+│   ├── app.js              # Aplicação Express principal
 │   ├── models/
 │   │   ├── Usuario.js      # Classe para gerenciamento de usuários
 │   │   ├── Evento.js       # Classe para gerenciamento de eventos
 │   │   └── Categoria.js    # Classe para gerenciamento de categorias
 │   ├── database/
 │   │   └── Database.js     # Classe para conexão com o banco de dados
+│   ├── middlewares/
+│   │   ├── auth.js         # Middleware de autenticação
+│   │   └── error.js        # Middleware de tratamento de erros
 │   ├── utils/
 │   │   ├── ErrorHandler.js # Classe para tratamento de erros
 │   │   └── Logger.js       # Classe para registro de logs
-│   └── index.js            # Arquivo principal e exemplo de uso
+│   └── views/              # Templates EJS para interface web
+│       ├── layout.ejs      # Layout base
+│       ├── index.ejs       # Página inicial
+│       ├── login.ejs       # Página de login
+│       ├── register.ejs    # Página de cadastro
+│       ├── dashboard.ejs   # Dashboard principal
+│       ├── evento-form.ejs # Formulário de eventos
+│       └── categoria-form.ejs # Formulário de categorias
 ├── logs/                   # Diretório para armazenamento de logs
 ├── package.json            # Dependências do projeto
 └── README.md               # Documentação
 ```
 
-## 📚 Classes Implementadas
+## 🚀 Funcionalidades Implementadas
 
-### 1. 👤 Classe Usuario
+### 🌐 Interface Web Completa
+- **Página Inicial** - Apresentação do sistema
+- **Sistema de Autenticação** - Login, cadastro e logout
+- **Dashboard Interativo** - Visão geral com estatísticas
+- **Gerenciamento de Eventos** - Criar, editar, excluir e visualizar
+- **Gerenciamento de Categorias** - Organização com cores personalizadas
+- **Design Responsivo** - Interface moderna com Bootstrap 5
 
-Representa os usuários da agenda eletrônica.
+### 🔐 Sistema de Autenticação
+- Registro de usuários com validação
+- Login e logout com sessões
+- Controle de acesso às páginas protegidas
+- Mensagens de feedback visuais
 
-#### Atributos:
-- `id`: Identificador único do usuário (gerado automaticamente)
-- `nome`: Nome completo do usuário (obrigatório)
-- `email`: Email do usuário (obrigatório, único)
-- `senha`: Senha do usuário (obrigatório)
-- `dataCriacao`: Data de criação do registro (gerado automaticamente)
-- `dataAtualizacao`: Data da última atualização (gerado automaticamente)
+### 🎨 Interface Moderna
+- **Bootstrap 5** para design responsivo
+- **Font Awesome** para ícones
+- **Gradientes CSS** para visual atrativo
+- **Alertas dinâmicos** para feedback do usuário
+- **Navegação intuitiva** entre páginas
 
-#### Métodos:
-- `criar(dados)`: Insere um novo usuário no banco de dados
-- `buscarPorId(id)`: Busca um usuário pelo ID
-- `buscarPorEmail(email)`: Busca um usuário pelo email
-- `listarTodos()`: Lista todos os usuários cadastrados
-- `atualizar(id, dados)`: Atualiza os dados de um usuário
-- `excluir(id)`: Remove um usuário do banco de dados
+### Segurança
+- Criptografia de senhas
+- Validação de campos obrigatórios
+- Middleware de autenticação
+- Headers de segurança
 
-### 2. 📆 Classe Evento
+## 💻 Requisitos
 
-Representa os eventos na agenda eletrônica.
-
-#### Atributos:
-- `id`: Identificador único do evento (gerado automaticamente)
-- `titulo`: Título do evento (obrigatório)
-- `descricao`: Descrição detalhada do evento
-- `dataInicio`: Data e hora de início do evento (obrigatório)
-- `dataFim`: Data e hora de término do evento
-- `local`: Local do evento
-- `usuarioId`: ID do usuário proprietário do evento (obrigatório)
-- `categoriaId`: ID da categoria do evento
-- `recorrencia`: Padrão de recorrência do evento (diário, semanal, mensal, etc.)
-- `lembrete`: Tempo de antecedência para notificação
-- `dataCriacao`: Data de criação do registro (gerado automaticamente)
-- `dataAtualizacao`: Data da última atualização (gerado automaticamente)
-
-#### Métodos:
-- `criar(dados)`: Insere um novo evento no banco de dados
-- `buscarPorId(id)`: Busca um evento pelo ID
-- `listarPorUsuario(usuarioId)`: Lista todos os eventos de um usuário
-- `listarPorPeriodo(dataInicio, dataFim)`: Lista eventos em um período específico
-- `listarPorCategoria(categoriaId)`: Lista eventos de uma categoria específica
-- `atualizar(id, dados)`: Atualiza os dados de um evento
-- `excluir(id)`: Remove um evento do banco de dados
-
-### 3. 🏷️ Classe Categoria
-
-Representa as categorias para classificação dos eventos.
-
-#### Atributos:
-- `id`: Identificador único da categoria (gerado automaticamente)
-- `nome`: Nome da categoria (obrigatório)
-- `cor`: Cor associada à categoria (para visualização no calendário)
-- `descricao`: Descrição da categoria
-- `usuarioId`: ID do usuário proprietário da categoria (obrigatório)
-- `dataCriacao`: Data de criação do registro (gerado automaticamente)
-- `dataAtualizacao`: Data da última atualização (gerado automaticamente)
-
-#### Métodos:
-- `criar(dados)`: Insere uma nova categoria no banco de dados
-- `buscarPorId(id)`: Busca uma categoria pelo ID
-- `listarPorUsuario(usuarioId)`: Lista todas as categorias de um usuário
-- `atualizar(id, dados)`: Atualiza os dados de uma categoria
-- `excluir(id)`: Remove uma categoria do banco de dados
-
-### 4. 💾 Classe Database
-
-Responsável pela conexão e operações com o banco de dados usando o driver nativo do MongoDB.
-
-#### Métodos:
-- `conectar()`: Estabelece conexão com o banco de dados
-- `desconectar()`: Encerra a conexão com o banco de dados
-- `getColecao(nomeColecao)`: Obtém uma coleção do banco de dados
-- `converterParaObjectId(id)`: Converte uma string para ObjectId
-- `iniciarTransacao()`: Inicia uma transação no banco de dados
-- `confirmarTransacao(sessao)`: Confirma uma transação no banco de dados
-- `reverterTransacao(sessao)`: Reverte uma transação no banco de dados
-
-### 5. ⚠️ Classe ErrorHandler
-
-Responsável pelo tratamento centralizado de erros.
-
-#### Métodos:
-- `tratarErro(erro, contexto)`: Processa o erro, registra no log e retorna uma resposta padronizada
-- `validarCamposObrigatorios(dados, campos)`: Valida se todos os campos obrigatórios estão preenchidos
-- `validarTiposDados(dados, tipos)`: Valida se os tipos de dados estão corretos
-
-### 6. 📝 Classe Logger
-
-Responsável pelo registro de logs do sistema usando apenas Node.js nativo.
-
-#### Métodos:
-- `registrarInfo(mensagem, dados)`: Registra informações no log
-- `registrarErro(mensagem, erro, contexto)`: Registra erros no log
-- `registrarAviso(mensagem, dados)`: Registra avisos no log
-- `formatarMensagem(level, mensagem, dados)`: Formata uma mensagem de log com timestamp
-- `escreverLog(arquivo, mensagem)`: Escreve uma mensagem no arquivo de log
-
-## 🛡️ Tratamento de Erros e Logs
-
-O projeto implementa um sistema robusto de tratamento de erros e logs:
-
-1. ✅ **Validação de Campos Obrigatórios**: Todos os métodos de criação e atualização verificam se os campos obrigatórios estão preenchidos.
-
-2. ✅ **Validação de Tipos de Dados**: Os tipos de dados são validados para garantir a integridade das informações.
-
-3. ✅ **Tratamento de Exceções**: Todas as operações são envolvidas em blocos try/catch para capturar e tratar exceções.
-
-4. ✅ **Logs de Erros**: Todos os erros são registrados em arquivos de log para posterior análise, usando apenas funções nativas do Node.js.
-
-5. ✅ **Respostas Padronizadas**: Todas as operações retornam respostas padronizadas, facilitando o tratamento pelo cliente.
+- Node.js 14.x ou superior
+- MongoDB 4.x ou superior
 
 ## 🚀 Como Usar
 
@@ -165,39 +98,35 @@ npm install
 
 3. Certifique-se de que o MongoDB está em execução na sua máquina
 
-4. Execute o exemplo:
+4. Execute a aplicação:
 ```bash
 npm start
 ```
-ou
-```bash
-node src/index.js
-```
 
-### 🔍 Exemplo de Uso
+A aplicação estará disponível em: `http://localhost:3000`
 
-O arquivo `src/index.js` contém um exemplo completo de uso da biblioteca, demonstrando:
-- 👤 Criação de usuário
-- 🏷️ Criação de categoria
-- 📆 Criação de evento
-- 🔍 Busca de eventos
-- ✏️ Atualização de evento
-- 🗑️ Exclusão de evento
-- ⚠️ Tratamento de erros
+### 🌐 Páginas Principais
 
-## 💻 Requisitos
+- **GET** `/` - Página inicial
+- **GET** `/login` - Página de login
+- **GET** `/register` - Página de cadastro
+- **GET** `/dashboard` - Dashboard principal (requer login)
+- **GET** `/eventos/novo` - Criar novo evento
+- **GET** `/categorias/nova` - Criar nova categoria
 
-- Node.js 14.x ou superior
-- MongoDB 4.x ou superior
+## 🛡️ Tratamento de Erros e Validação
 
-## 📦 Dependências
+O projeto implementa:
 
-O projeto utiliza apenas:
-- **mongodb**: Driver oficial do MongoDB para Node.js
+1. ✅ **Validação de Campos Obrigatórios**: Verificação de todos os campos necessários
+2. ✅ **Validação de Tipos de Dados**: Garantia da integridade dos dados
+3. ✅ **Tratamento de Exceções**: Captura e tratamento de erros
+4. ✅ **Logs de Sistema**: Registro de operações e erros
+5. ✅ **Respostas Padronizadas**: Formato consistente de retorno
 
 ## 🎓 Considerações Finais
 
-Esta biblioteca foi desenvolvida como parte do Projeto 1 da disciplina de Programação Web Back-End, seguindo os requisitos especificados. Ela implementa as funcionalidades básicas de uma agenda eletrônica, com foco no armazenamento e busca de eventos em um calendário, utilizando exclusivamente o driver nativo do MongoDB e Node.js puro.
+Esta aplicação web foi desenvolvida como parte do Projeto 2 da disciplina de Programação Web Back-End, implementando uma interface web completa para gerenciamento de agenda eletrônica, utilizando as classes desenvolvidas no Projeto 1, o framework Express.js e templates EJS para renderização server-side.
 
 ---
 
