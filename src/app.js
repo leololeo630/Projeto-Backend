@@ -300,6 +300,126 @@ app.post('/categorias', requireAuth, async (req, res) => {
   }
 });
 
+// Rotas para categorias
+app.get('/categorias/:id/editar', requireAuth, async (req, res) => {
+  try {
+    const categoriaId = req.params.id;
+    const usuarioId = req.session.usuario.id;
+
+    const resultadoCategoria = await Categoria.buscarPorId(categoriaId);
+    if (!resultadoCategoria.sucesso || !resultadoCategoria.dados) {
+      req.session.erro = 'Categoria não encontrada';
+      return res.redirect('/dashboard');
+    }
+
+    const categoria = resultadoCategoria.dados;
+    
+    if (categoria.usuarioId.toString() !== usuarioId) {
+      req.session.erro = 'Você não tem permissão para editar esta categoria';
+      return res.redirect('/dashboard');
+    }
+
+    res.render('categoria-form', {
+      titulo: 'Editar Categoria',
+      categoria: categoria,
+      acao: 'editar'
+    });
+
+  } catch (erro) {
+    Logger.registrarErro('Erro ao carregar categoria para edição', erro);
+    req.session.erro = 'Erro ao carregar categoria';
+    res.redirect('/dashboard');
+  }
+});
+
+app.put('/categorias/:id', requireAuth, async (req, res) => {
+  try {
+    const categoriaId = req.params.id;
+    const usuarioId = req.session.usuario.id;
+    const { nome, cor, descricao } = req.body;
+
+    const resultadoCategoria = await Categoria.buscarPorId(categoriaId);
+    if (!resultadoCategoria.sucesso || !resultadoCategoria.dados) {
+      req.session.erro = 'Categoria não encontrada';
+      return res.redirect('/dashboard');
+    }
+
+    if (resultadoCategoria.dados.usuarioId.toString() !== usuarioId) {
+      req.session.erro = 'Você não tem permissão para editar esta categoria';
+      return res.redirect('/dashboard');
+    }
+
+    if (!nome) {
+      req.session.erro = 'Nome da categoria é obrigatório';
+      return res.redirect(`/categorias/${categoriaId}/editar`);
+    }
+
+    const dadosCategoria = {
+      nome,
+      cor: cor || '#3498db',
+      descricao
+    };
+
+    const resultado = await Categoria.atualizar(categoriaId, dadosCategoria);
+
+    if (!resultado.sucesso) {
+      req.session.erro = resultado.erro.mensagem;
+      return res.redirect(`/categorias/${categoriaId}/editar`);
+    }
+
+    req.session.mensagem = 'Categoria atualizada com sucesso!';
+    res.redirect('/dashboard');
+
+  } catch (erro) {
+    Logger.registrarErro('Erro ao atualizar categoria', erro);
+    req.session.erro = 'Erro ao atualizar categoria';
+    res.redirect('/dashboard');
+  }
+});
+
+app.post('/categorias/:id/excluir', requireAuth, async (req, res) => {
+  try {
+    const categoriaId = req.params.id;
+    const usuarioId = req.session.usuario.id;
+
+    const resultadoCategoria = await Categoria.buscarPorId(categoriaId);
+    if (!resultadoCategoria.sucesso || !resultadoCategoria.dados) {
+      req.session.erro = 'Categoria não encontrada';
+      return res.redirect('/dashboard');
+    }
+
+    if (resultadoCategoria.dados.usuarioId.toString() !== usuarioId) {
+      req.session.erro = 'Você não tem permissão para excluir esta categoria';
+      return res.redirect('/dashboard');
+    }
+
+    // Verificar se há eventos associados a esta categoria
+    const resultadoEventos = await Evento.listarPorUsuario(usuarioId);
+    const eventosComCategoria = resultadoEventos.sucesso ? 
+      resultadoEventos.dados.filter(evento => evento.categoriaId && evento.categoriaId.toString() === categoriaId) : [];
+
+    if (eventosComCategoria.length > 0) {
+      req.session.erro = `Não é possível excluir esta categoria pois ela está associada a ${eventosComCategoria.length} evento(s). Remova a categoria dos eventos primeiro.`;
+      return res.redirect('/dashboard');
+    }
+
+    const resultado = await Categoria.excluir(categoriaId);
+
+    if (!resultado.sucesso) {
+      req.session.erro = resultado.erro.mensagem;
+    } else {
+      req.session.mensagem = 'Categoria excluída com sucesso!';
+    }
+
+    res.redirect('/dashboard');
+
+  } catch (erro) {
+    Logger.registrarErro('Erro ao excluir categoria', erro);
+    req.session.erro = 'Erro ao excluir categoria';
+    res.redirect('/dashboard');
+  }
+});
+
 app.get('/eventos/:id/editar', requireAuth, async (req, res) => {
   try {
     const eventoId = req.params.id;
@@ -313,7 +433,7 @@ app.get('/eventos/:id/editar', requireAuth, async (req, res) => {
 
     const evento = resultadoEvento.dados;
     
-    if (evento.usuarioId !== usuarioId) {
+    if (evento.usuarioId.toString() !== usuarioId) {
       req.session.erro = 'Você não tem permissão para editar este evento';
       return res.redirect('/dashboard');
     }
@@ -347,7 +467,7 @@ app.put('/eventos/:id', requireAuth, async (req, res) => {
       return res.redirect('/dashboard');
     }
 
-    if (resultadoEvento.dados.usuarioId !== usuarioId) {
+    if (resultadoEvento.dados.usuarioId.toString() !== usuarioId) {
       req.session.erro = 'Você não tem permissão para editar este evento';
       return res.redirect('/dashboard');
     }
@@ -400,7 +520,7 @@ app.post('/eventos/:id/excluir', requireAuth, async (req, res) => {
       return res.redirect('/dashboard');
     }
 
-    if (resultadoEvento.dados.usuarioId !== usuarioId) {
+    if (resultadoEvento.dados.usuarioId.toString() !== usuarioId) {
       req.session.erro = 'Você não tem permissão para excluir este evento';
       return res.redirect('/dashboard');
     }
