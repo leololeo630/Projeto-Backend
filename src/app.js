@@ -91,7 +91,6 @@ app.post('/login', async (req, res) => {
 
     const usuario = resultado.dados;
     
-    // Verificar senha (simplificado - na versão real usaria bcrypt)
     if (usuario.senha !== senha) {
       req.session.erro = 'Email ou senha incorretos';
       return res.redirect('/login');
