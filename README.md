@@ -75,7 +75,6 @@ Projeto-Backend/
 - **Navegação intuitiva** entre páginas
 
 ### Segurança
-- Criptografia de senhas
 - Validação de campos obrigatórios
 - Middleware de autenticação
 - Headers de segurança
