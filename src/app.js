@@ -332,7 +332,7 @@ app.get('/categorias/:id/editar', requireAuth, async (req, res) => {
   }
 });
 
-app.put('/categorias/:id', requireAuth, async (req, res) => {
+app.post('/categorias/:id', requireAuth, async (req, res) => {
   try {
     const categoriaId = req.params.id;
     const usuarioId = req.session.usuario.id;
@@ -455,7 +455,7 @@ app.get('/eventos/:id/editar', requireAuth, async (req, res) => {
   }
 });
 
-app.put('/eventos/:id', requireAuth, async (req, res) => {
+app.post('/eventos/:id', requireAuth, async (req, res) => {
   try {
     const eventoId = req.params.id;
     const usuarioId = req.session.usuario.id;
